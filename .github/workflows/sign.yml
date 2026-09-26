@@ -2,15 +2,16 @@ name: chinafix-sign
 
 on:
   schedule:
-    - cron: "37 0 * * *"
-  workflow_dispatch:
+    # UTC 00:05 = 北京时间 08:05（每天）。实际签到会再随机延后 0~RANDOM_DELAY 分钟。
+    - cron: "5 0 * * *"
+  workflow_dispatch: # 支持在 Actions 页面手动运行
   push:
     branches: [main, master]
 
 jobs:
   sign:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 75   # 给随机延迟留足时间（RANDOM_DELAY 建议不超过 45~60）
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,8 +28,13 @@ jobs:
         run: python chinafix_sign.py
         env:
           CHINAFIX_COOKIE: ${{ secrets.CHINAFIX_COOKIE }}
-          SENDKEY: ${{ secrets.SENDKEY }}
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-          BARK_URL: ${{ secrets.BARK_URL }}
-          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+          RANDOM_DELAY: ${{ secrets.RANDOM_DELAY }}     # 随机延迟最大分钟数，如 30；不配置=不延迟
+          COOKIE_SET_DATE: ${{ secrets.COOKIE_SET_DATE }}# 上次设置Cookie日期 YYYY-MM-DD，用于到期提醒
+          REMIND_BEFORE: ${{ secrets.REMIND_BEFORE }}  # 提前几天提醒更换，默认 27
+          # —— 可选通知，按需在 Secrets 中配置，不配置可留空 ——
+          QYWX_AM: ${{ secrets.QYWX_AM }}              # 企业微信自建应用（与青龙 QYWX_AM 同字符串）
+          SENDKEY: ${{ secrets.SENDKEY }}              # Server酱 SendKey
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}    # Telegram Bot Token
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}        # Telegram Chat ID
+          BARK_URL: ${{ secrets.BARK_URL }}            # Bark key 或完整地址
+          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}  # 企业微信群机器人完整 webhook
