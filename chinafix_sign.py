@@ -145,7 +145,9 @@ def parse_stats(page):
 
 
 def parse_username(page):
-    m = re.search(r'home\.php\?mod=space[^>]*>\s*([^<]{1,30}?)\s*</a>', page)
+    m = re.search(
+        r'home\.php\?mod=space(?:&|&amp;)uid=\d+[^>]*>\s*([^<]{1,30}?)\s*</a>',
+        page)
     if m:
         return html_lib.unescape(m.group(1)).strip()
     return ""
@@ -167,7 +169,9 @@ def sign_one(cookie, label):
 
     # 未登录时按钮指向 member.php ... action=login
     is_login_link = ("action=login" in href) or ("logging" in href and "login" in href)
-    if is_login_link or not href:
+    # 注意：已签到后 JD_sign 按钮会消失（href 为空），这属于"已登录且已签"，不能误判；
+    # 只有在"未签到"且按钮指向登录页/缺失时，才是真的未登录。
+    if not already and (is_login_link or not href):
         return False, label, "Cookie 已失效 / 未登录，请更新 CHINAFIX_COOKIE", {}
 
     sign_url = requests.compat.urljoin(BASE + "/", href)
@@ -214,11 +218,13 @@ def load_accounts(raw):
             continue
         if line.lower().startswith("cookie:"):
             line = line.split(":", 1)[1].strip()
+        label, cookie = "", line
         if "|" in line:
-            label, cookie = line.split("|", 1)
-            label, cookie = label.strip(), cookie.strip()
-        else:
-            label, cookie = "", line
+            pre, post = line.split("|", 1)
+            # 仅当 "|" 前是纯备注（不含 = 和 ;）时，才按 "备注|Cookie" 解析；
+            # 否则说明 "|" 是某个 Cookie 值的一部分（如 SERVERID=a|b|c），整行都算 Cookie。
+            if ("=" not in pre) and (";" not in pre):
+                label, cookie = pre.strip(), post.strip()
         if cookie:
             n += 1
             accounts.append((label or ("账号%d" % n), cookie))
