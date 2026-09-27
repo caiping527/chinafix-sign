@@ -2,11 +2,16 @@ name: chinafix-sign
 
 on:
   schedule:
-    # UTC 00:05 = 北京时间 08:05（每天）。实际签到会再随机延后 0~RANDOM_DELAY 分钟。
+    # —— 每天主签到：UTC 00:05 = 北京 08:05 ——
     - cron: "5 0 * * *"
+    # —— 每天备用：UTC 01:40 = 北京 09:40 ——
+    # 主任务万一被 GitHub 延迟/跳过，备用任务兜底；若已签则自动判为“今日已签”，不重复、不误报。
+    - cron: "40 1 * * *"
+    # —— 一次性补签：仅 2026-09-27 当天 UTC 02:10 = 北京 10:10 触发，之后永不复发，可长期保留 ——
+    - cron: "10 2 27 9 *"
   workflow_dispatch: # 支持在 Actions 页面手动运行
   push:
-    branches: [main, master]
+    branches: [main, master] # 提交本文件也会立即自动运行一次（用于补签）
 
 jobs:
   sign:
@@ -29,7 +34,7 @@ jobs:
         env:
           CHINAFIX_COOKIE: ${{ secrets.CHINAFIX_COOKIE }}
           RANDOM_DELAY: ${{ secrets.RANDOM_DELAY }}     # 随机延迟最大分钟数，如 30；不配置=不延迟
-          COOKIE_SET_DATE: ${{ secrets.COOKIE_SET_DATE }}# 上次设置Cookie日期 YYYY-MM-DD，用于到期提醒
+          COOKIE_SET_DATE: ${{ secrets.COOKIE_SET_DATE }}# 上次设置Cookie日期 YYYY-MM-DD，用于到期提醒（不想要提醒就别配）
           REMIND_BEFORE: ${{ secrets.REMIND_BEFORE }}  # 提前几天提醒更换，默认 27
           # —— 可选通知，按需在 Secrets 中配置，不配置可留空 ——
           QYWX_AM: ${{ secrets.QYWX_AM }}              # 企业微信自建应用（与青龙 QYWX_AM 同字符串）
