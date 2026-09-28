@@ -1,18 +1,11 @@
 name: chinafix-sign
-
 on:
   schedule:
-    # —— 每天主签到：UTC 00:05 = 北京 08:05 ——
+    # 每天主签到：UTC 00:05 = 北京 08:05（单 cron，参考 Cloud189 稳定写法）
     - cron: "5 0 * * *"
-    # —— 每天备用：UTC 01:40 = 北京 09:40 ——
-    # 主任务万一被 GitHub 延迟/跳过，备用任务兜底；若已签则自动判为“今日已签”，不重复、不误报。
-    - cron: "40 1 * * *"
-    # —— 一次性补签：仅 2026-09-27 当天 UTC 02:10 = 北京 10:10 触发，之后永不复发，可长期保留 ——
-    - cron: "10 2 27 9 *"
   workflow_dispatch: # 支持在 Actions 页面手动运行
   push:
     branches: [main, master] # 提交本文件也会立即自动运行一次（用于补签）
-
 jobs:
   sign:
     runs-on: ubuntu-latest
@@ -20,15 +13,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install dependencies
         run: python -m pip install --upgrade pip && pip install -r requirements.txt
-
       - name: Run sign-in
         run: python chinafix_sign.py
         env:
