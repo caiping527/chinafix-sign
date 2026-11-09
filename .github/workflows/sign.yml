@@ -1,8 +1,8 @@
 name: chinafix-sign
 on:
   schedule:
-    # 每天主签到：UTC 00:05 = 北京 08:05（单 cron，参考 Cloud189 稳定写法）
-    - cron: "5 0 * * *"
+    # 每天主签到：UTC 17:33 = 北京 01:33；五个项目错峰，避开 UTC 00~02 调度高峰
+    - cron: "33 17 * * *"
   workflow_dispatch: # 支持在 Actions 页面手动运行
   push:
     branches: [main, master] # 提交本文件也会立即自动运行一次（用于补签）
