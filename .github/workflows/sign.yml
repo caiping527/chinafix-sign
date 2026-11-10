@@ -33,3 +33,23 @@ jobs:
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}        # Telegram Chat ID
           BARK_URL: ${{ secrets.BARK_URL }}            # Bark key 或完整地址
           WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}  # 企业微信群机器人完整 webhook
+
+
+  heartbeat:
+    name: 上报成功心跳
+    needs: sign
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Healthchecks
+        run: |
+          U="${{ vars.HC_PING_URL }}"
+          if [ -z "$U" ]; then
+            echo "[心跳] 未配置 HC_PING_URL，跳过"
+            exit 0
+          fi
+          if curl -fsS --max-time 15 --retry 2 "$U"; then
+            echo "[心跳] 已上报成功"
+          else
+            echo "[心跳] 上报失败（不影响签到结果）"
+          fi
