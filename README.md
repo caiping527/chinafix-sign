@@ -22,10 +22,10 @@
 
 ## 重要说明
 
-- **仓库必须保持私有**。公开的签到仓库会进搜索引擎，被平台侧扫到只是时间问题。
+- **仓库 2026-11-24 ~ 11-30 临时公开**（Actions 免费额度按私有仓库计分钟，本月已耗尽；公开仓库不计费），12-01 改回 Private。Cookie 只在 Secrets，代码与历史里没有。
 - **账号信息不进代码**。全部在 `Settings → Secrets and variables → Actions`。
 - **日志脱敏**。Cookie / 令牌只留前缀，不落完整值。
-- 请勿把本仓库设为 Public，也请勿 fork 到公开仓库。
+- 公开期间请勿 fork 到别处；12-01 会改回 Private。
 
 ---
 
@@ -75,7 +75,7 @@ requirements.txt              Python 依赖
 ## 安全
 
 - 凭据仅存 GitHub Secrets（加密）
-- 仓库私有，不进公开搜索
+- 仓库临时公开至 12-01，凭据只在 Secrets
 - 停用：删对应 Secret，或 Disable workflow
 
 ---
